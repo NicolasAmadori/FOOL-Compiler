@@ -1,0 +1,5 @@
+let 
+  var x : int = 5;
+  fun sum : int (a : int, b : int)  a + b + x ;
+in
+  print(sum(2,3));
