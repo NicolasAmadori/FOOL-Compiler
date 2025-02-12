@@ -237,11 +237,10 @@ public class AST {
 	
 	public static class ClassNode extends TypeNode {
 		final String id;
-		final String parentId;
-		final List<FieldNode> fieldlist;
-		final List<MethodNode> methodList;
+		final List<FieldNode> fields;
+		final List<MethodNode> methods;
 
-		ClassNode(String i, String pi, List<FieldNode> pl, List<MethodNode> fl) {id=i; parentId=pi; fieldlist=pl; methodList =fl;}
+		ClassNode(String i, List<FieldNode> pl, List<MethodNode> fl) {id=i; fields =pl; methods =fl;}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
@@ -293,16 +292,17 @@ public class AST {
 	}
 
 	public static class ClassTypeNode extends TypeNode {
-		final String className;
-		ClassTypeNode(String cn) {className = cn;}
+		final ArrayList<TypeNode> allFields;
+		final ArrayList<ArrowTypeNode> allMethods;
+		ClassTypeNode(ArrayList<TypeNode> af, ArrayList<ArrowTypeNode> am) {allFields = af; allMethods = am;}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
 	public static class RefTypeNode extends TypeNode {
-		final String className;
-		RefTypeNode(String cn) {className = cn;}
+		final String id;
+		RefTypeNode(String cn) {id = cn;}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
