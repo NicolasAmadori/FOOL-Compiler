@@ -184,9 +184,9 @@ public class CodeGenerationASTVisitor extends BaseASTVisitor<String, VoidExcepti
 		String l1 = freshLabel();
 		String l2 = freshLabel();
 		return nlJoin(
-				visit(n.left),
 				visit(n.right),
-				"bgt " + l1,
+				visit(n.left),
+				"bleq " + l1,
 				"push 0",
 				"b " + l2,
 				l1 + ":",
@@ -203,7 +203,7 @@ public class CodeGenerationASTVisitor extends BaseASTVisitor<String, VoidExcepti
 		return nlJoin(
 				visit(n.left),
 				visit(n.right),
-				"ble " + l1,
+				"bleq " + l1,
 				"push 0",
 				"b " + l2,
 				l1 + ":",
