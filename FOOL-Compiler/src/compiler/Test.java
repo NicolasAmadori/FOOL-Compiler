@@ -5,7 +5,13 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import compiler.lib.*;
 import compiler.exc.*;
+
+//SVM Classica
 import svm.*;
+
+//Virtual SVM
+//import visualsvm.*;
+//import java.nio.file.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
@@ -74,7 +80,13 @@ public class Test {
     	if (lexerASM.lexicalErrors+parserASM.getNumberOfSyntaxErrors()>0) System.exit(1);
 
     	System.out.println("Running generated code via Stack Virtual Machine.");
+
+		//SVM classica
     	ExecuteVM vm = new ExecuteVM(parserASM.code);
+
+		//Virtual SVM
+		//ExecuteVM vm = new ExecuteVM(parserASM.code,parserASM.sourceMap,Files.readAllLines(Paths.get(fileName+".asm")));
+
     	vm.cpu();
 
     }
