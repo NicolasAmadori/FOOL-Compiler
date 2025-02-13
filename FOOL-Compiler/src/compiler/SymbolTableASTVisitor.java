@@ -223,4 +223,109 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		visit(n.right);
 		return null;
 	}
+
+	// OBJECT-ORIENTED EXTENSION
+
+	@Override
+	public Void visitNode(ClassNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(FieldNode n) {
+		if (print) printNode(n);
+
+		if (symTable.get(nestingLevel).containsKey(n.id)) { //Controllo che il campo non esista già
+			System.out.println("Errore: Campo " + n.id + " già dichiarato.");
+			stErrors++;
+			return null;
+		}
+
+		symTable.get(nestingLevel).put(n.id, new STentry(nestingLevel, n.getType(), decOffset--)); //Inserisco l'entry nella symbol table
+
+		return null;
+	}
+
+	@Override
+	public Void visitNode(MethodNode n) {
+		if (print) printNode(n);
+
+		Map<String, STentry> classTable = symTable.get(nestingLevel);
+
+		if (classTable.containsKey(n.id)) {
+			System.out.println("Errore: Metodo " + n.id + " già dichiarato.");
+			stErrors++;
+			return null;
+		}
+
+		List<TypeNode> paramTypes = new ArrayList<>();
+		for (ParNode par : n.parlist) {
+			paramTypes.add(par.getType());
+		}
+
+		STentry entry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset--);
+		classTable.put(n.id, entry);
+
+		nestingLevel++;
+		Map<String, STentry> methodTable = new HashMap<>();
+		symTable.add(methodTable);
+		int prevDecOffset = decOffset;
+		decOffset = -2; //Valore di partenza
+
+		int paramOffset = 1;
+		for (ParNode par : n.parlist) {
+			if (methodTable.put(par.id, new STentry(nestingLevel, par.getType(), paramOffset++)) != null) {
+				System.out.println("Errore: Parametro " + par.id + " già dichiarato.");
+				stErrors++;
+			}
+		}
+
+		for (Node dec : n.declist) {
+			visit(dec);
+		}
+
+		visit(n.exp);
+
+		symTable.remove(nestingLevel--);
+		decOffset = prevDecOffset;
+
+		return null;
+	}
+
+	@Override
+	public Void visitNode(ClassCallNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(NewNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(EmptyNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(ClassTypeNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(RefTypeNode n) {
+		if (print) printNode(n);
+		return null;
+	}
+
+	@Override
+	public Void visitNode(EmptyTypeNode n) {
+		if (print) printNode(n);
+		return null;
+	}
 }

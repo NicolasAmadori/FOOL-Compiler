@@ -15,7 +15,7 @@ import svm.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-   			
+
     	String fileName = "prova.fool";
 
     	CharStream chars = CharStreams.fromFileName(fileName);
@@ -85,10 +85,9 @@ public class Test {
     	ExecuteVM vm = new ExecuteVM(parserASM.code);
 
 		//Virtual SVM
-		//ExecuteVM vm = new ExecuteVM(parserASM.code,parserASM.sourceMap,Files.readAllLines(Paths.get(fileName+".asm")));
+//		ExecuteVM vm = new ExecuteVM(parserASM.code,parserASM.sourceMap,Files.readAllLines(Paths.get(fileName+".asm")));
 
     	vm.cpu();
-
     }
 }
 
