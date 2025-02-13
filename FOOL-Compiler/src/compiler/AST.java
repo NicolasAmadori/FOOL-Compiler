@@ -235,20 +235,31 @@ public class AST {
 
 	// OBJECT-ORIENTED EXTENSION
 	
-	public static class ClassNode extends TypeNode {
+	public static class ClassNode extends DecNode {
 		final String id;
+		final String superClassId; //Non utilizzato nell'implementazione senza ereditarietà
 		final List<FieldNode> fields;
 		final List<MethodNode> methods;
 
-		ClassNode(String i, List<FieldNode> pl, List<MethodNode> fl) {id=i; fields =pl; methods =fl;}
+		ClassNode(String i, String si, List<FieldNode> pl, List<MethodNode> fl) {
+			id = i;
+			superClassId = si;
+			fields = Collections.unmodifiableList(pl);
+			methods = Collections.unmodifiableList(fl);
+			type = new RefTypeNode(i);
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
-	public static class FieldNode extends ParNode {
+	public static class FieldNode extends DecNode {
+		final String id;
 
-		FieldNode(String i, TypeNode t) {super(i, t);}
+		FieldNode(String i, TypeNode t) {
+			id = i;
+			type = t;
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
@@ -256,45 +267,62 @@ public class AST {
 
 	public static class MethodNode extends FunNode {
 
-		MethodNode(String i, TypeNode rt, List<ParNode> pl, List<DecNode> dl, Node e) { super(i, rt, pl, dl, e); }
+		MethodNode(String i, TypeNode rt, List<ParNode> pl, List<DecNode> dl, Node e) {
+			super(i, rt, pl, dl, e);
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
-	public static class ClassCallNode extends TypeNode {
-		final String classId;
+	public static class ClassCallNode extends Node {
+		final String objectId;
 		final String methodId;
 		final List<Node> arglist;
 		STentry entry;
 		int nl;
-		ClassCallNode(String ci, String mi, List<Node> al) {classId=ci; methodId=mi; arglist=Collections.unmodifiableList(al);;}
+
+		ClassCallNode(String oi, String mi, List<Node> al) {
+			objectId = oi;
+			methodId = mi;
+			arglist = Collections.unmodifiableList(al);
+			entry = null;
+			nl = -1;
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
-	public static class NewNode extends TypeNode {
+	public static class NewNode extends Node {
 		final String classId;
 		final List<Node> arglist;
 		STentry entry;
 		int nl;
-		NewNode(String ci, List<Node> al) {classId=ci; arglist=Collections.unmodifiableList(al);;}
+
+		NewNode(String ci, List<Node> al) {
+			classId = ci;
+			arglist=Collections.unmodifiableList(al);
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
-	public static class EmptyNode extends TypeNode {
+	public static class EmptyNode extends Node {
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
 	public static class ClassTypeNode extends TypeNode {
-		final ArrayList<TypeNode> allFields;
-		final ArrayList<ArrowTypeNode> allMethods;
-		ClassTypeNode(ArrayList<TypeNode> af, ArrayList<ArrowTypeNode> am) {allFields = af; allMethods = am;}
+		final List<TypeNode> allFields;
+		final List<ArrowTypeNode> allMethods;
+
+		ClassTypeNode(List<TypeNode> af, List<ArrowTypeNode> am) {
+			allFields = Collections.unmodifiableList(af);
+			allMethods = Collections.unmodifiableList(am);
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
@@ -302,7 +330,10 @@ public class AST {
 
 	public static class RefTypeNode extends TypeNode {
 		final String id;
-		RefTypeNode(String cn) {id = cn;}
+
+		RefTypeNode(String cn) {
+			id = cn;
+		}
 
 		@Override
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}

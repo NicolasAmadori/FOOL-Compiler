@@ -235,52 +235,87 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 	@Override
 	public Node visitIdType(IdTypeContext c) {
 		if (print) printVarAndProdName(c);
-		return new RefTypeNode(c.ID().getText());
+		String id = c.ID().getText();
+		return new RefTypeNode(id);
 	}
 
 	@Override
 	public Node visitCldec(CldecContext c) {
 		if (print) printVarAndProdName(c);
-		List<FieldNode> fieldList = new ArrayList<>();
-		for (int i = 2; i < c.ID().size(); i++) {
-			fieldList.add(new FieldNode(c.ID(i).getText(),(TypeNode) visit(c.type(i - 2))));
+
+		String className = c.ID(0).getText();
+
+		//Lettura classe padre (se presente)
+		String superClass = null;
+		int startingIndex = 1;
+		if (c.EXTENDS() != null){
+			superClass = c.ID(1).getText();
+			startingIndex = 2;
 		}
+
+		//Lettura dei fields con id e tipi
+		List<FieldNode> fieldList = new ArrayList<>();
+		for (int i = startingIndex; i < c.ID().size(); i++) {
+			fieldList.add(new FieldNode(
+					c.ID(i).getText(),
+					(TypeNode) visit(c.type(i - startingIndex))
+			));
+		}
+
+		//Lettura dei metodi (a partire dal loor context)
 		List<MethodNode> methodList = new ArrayList<>();
 		for (MethdecContext mC : c.methdec()) methodList.add((MethodNode) visit(mC));
-		return new ClassNode(c.ID(0).getText(), fieldList, methodList);
+		return new ClassNode(className, superClass, fieldList, methodList);
 	}
 
 	@Override
 	public Node visitMethdec(MethdecContext c) {
 		if (print) printVarAndProdName(c);
+
+		String methodName = c.ID(0).getText();
+		TypeNode returnType = (TypeNode) visit(c.type(0));
+
 		List<ParNode> paramList = new ArrayList<>();
 		for (int i = 1; i < c.ID().size(); i++) {
 			paramList.add(new ParNode(c.ID(i).getText(),(TypeNode) visit(c.type(i))));
 		}
+
 		List<DecNode> decList = new ArrayList<>();
 		for (DecContext dec : c.dec()) decList.add((DecNode) visit(dec));
-		return new MethodNode(c.ID(0).getText(), (TypeNode) visit(c.type(0)), paramList, decList, visit(c.exp()));
+
+		Node body = visit(c.exp());
+
+		return new MethodNode(methodName, returnType, paramList, decList, body);
 	}
 
 	@Override
 	public Node visitNew(NewContext c) {
 		if (print) printVarAndProdName(c);
+
+		String className = c.ID().getText();
+
 		List<Node> expList = new ArrayList<>();
 		for (ExpContext exp : c.exp()) expList.add(visit(exp));
-		return new NewNode(c.ID().getText(), expList);
+
+		return new NewNode(className, expList);
 	}
 
 	@Override
 	public Node visitNull(NullContext c) {
 		if (print) printVarAndProdName(c);
-		return new EmptyNode();
+		return new EmptyNode(); //TODO: Check if EmptyNode or EmptyTypeNode
 	}
 
 	@Override
 	public Node visitDotCall(DotCallContext c) {
 		if (print) printVarAndProdName(c);
+
+		String objectName = c.ID(0).getText();
+		String methodName = c.ID(1).getText();
+
 		List<Node> expList = new ArrayList<>();
 		for (ExpContext exp : c.exp()) expList.add(visit(exp));
-		return new ClassCallNode(c.ID(0).getText(), c.ID(1).getText(), expList);
+
+		return new ClassCallNode(objectName, methodName, expList);
 	}
 }
