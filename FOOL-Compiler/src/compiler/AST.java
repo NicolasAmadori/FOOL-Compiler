@@ -279,15 +279,17 @@ public class AST {
 		final String objectId;
 		final String methodId;
 		final List<Node> arglist;
-		STentry entry;
 		int nl;
+		STentry entry;
+		STentry methodEntry;
 
 		ClassCallNode(String oi, String mi, List<Node> al) {
 			objectId = oi;
 			methodId = mi;
 			arglist = Collections.unmodifiableList(al);
-			entry = null;
 			nl = -1;
+			entry = null;
+			methodEntry = null;
 		}
 
 		@Override

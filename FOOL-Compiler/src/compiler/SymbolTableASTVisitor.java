@@ -346,7 +346,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		int prevDecOffset = decOffset;
 		decOffset = DECLARATIONS_STARTING_OFFSET; //Valore di partenza
 
-		for (Node dec : n.declist) visit(dec);
+		n.declist.forEach(this::visit);
 
 		visit(n.exp);
 
@@ -364,24 +364,31 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 			System.out.println("Class object with id " + n.objectId + " at line "+ n.getLine() + " not declared");
 			stErrors++;
 		} else if (entry.type instanceof RefTypeNode) {
-
+			n.nl = nestingLevel;
+			n.entry = entry;
 			Map<String, STentry> virtualTable = classTable.get(((RefTypeNode) entry.type).id);
 			if (virtualTable.containsKey(n.methodId) && virtualTable.get(n.methodId).type instanceof ArrowTypeNode) {
-//				n.entry = entry;
-//				n.nl = nestingLevel;
+				n.methodEntry = virtualTable.get(n.methodId);
 			}
 			else {
 				System.out.println("Method id " + n.methodId + " at line "+ n.getLine() + " not declared");
 				stErrors++;
 			}
-			for (Node arg : n.arglist) visit(arg);
 		}
+		n.arglist.forEach(this::visit);
 		return null;
 	}
 
 	@Override
 	public Void visitNode(NewNode n) {
 		if (print) printNode(n);
+		if(classTable.containsKey(n.classId)) {
+			n.nl = nestingLevel;
+			n.entry = symTable.getFirst().get(n.classId);
+		} else {
+			System.out.println("Class " + n.classId + " at line "+ n.getLine() + " not declared");
+			stErrors++;
+		}
 		return null;
 	}
 
