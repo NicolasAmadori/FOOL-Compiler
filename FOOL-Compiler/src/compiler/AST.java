@@ -333,8 +333,8 @@ public class AST {
 	public static class RefTypeNode extends TypeNode {
 		final String id;
 
-		RefTypeNode(String cn) {
-			id = cn;
+		RefTypeNode(String i) {
+			id = i;
 		}
 
 		@Override
