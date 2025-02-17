@@ -300,11 +300,11 @@ public class AST {
 		final String classId;
 		final List<Node> arglist;
 		STentry entry;
-		int nl;
 
 		NewNode(String ci, List<Node> al) {
 			classId = ci;
 			arglist=Collections.unmodifiableList(al);
+			entry = null;
 		}
 
 		@Override
