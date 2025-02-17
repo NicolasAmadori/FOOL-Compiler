@@ -12,6 +12,25 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	private int decOffset=-2; // counter for offset of local declarations at current nesting level 
 	int stErrors=0;
 
+	Map<String, Map<String, STentry>> classTable = new HashMap<>();
+
+	private final int METHODS_STARTING_OFFSET = 0;
+	private final int METHODS_OFFSET_DELTA = 1;
+
+	private final int FIELDS_STARTING_OFFSET = -1;
+	private final int FIELDS_OFFSET_DELTA = -1;
+
+	private final int PARAMETERS_STARTING_OFFSET = 1;
+	private final int PARAMETERS_OFFSET_DELTA = 1;
+
+	private final int DECLARATIONS_STARTING_OFFSET = -2;
+	private final int DECLARATIONS_OFFSET_DELTA = -1;
+
+	private final int FUNCTIONS_STARTING_OFFSET = 0;
+	private final int FUNCTIONS_OFFSET_DELTA = 1;
+
+
+
 	SymbolTableASTVisitor() {}
 	SymbolTableASTVisitor(boolean debug) {super(debug);} // enables print for debugging
 
@@ -230,15 +249,15 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	public Void visitNode(ClassNode n) {
 		if (print) printNode(n);
 
-		List<TypeNode> fieldTypes = n.fields.stream().map(FieldNode::getType).toList();
+//		List<TypeNode> fieldTypes = n.fields.stream().map(FieldNode::getType).toList();
+//
+//		List<ArrowTypeNode> methodTypes = new ArrayList<>();
+//		for (MethodNode m : n.methods) {
+//			List<TypeNode> paramTypes = m.parlist.stream().map(ParNode::getType).toList();
+//			methodTypes.add(new ArrowTypeNode(paramTypes, m.retType));
+//		}
 
-		List<ArrowTypeNode> methodTypes = new ArrayList<>();
-		for (MethodNode m : n.methods) {
-			List<TypeNode> paramTypes = m.parlist.stream().map(ParNode::getType).toList();
-			methodTypes.add(new ArrowTypeNode(paramTypes, m.retType));
-		}
-
-		ClassTypeNode classType = new ClassTypeNode(fieldTypes, methodTypes);
+		ClassTypeNode classType = new ClassTypeNode(new ArrayList<>(), new ArrayList<>());
 		STentry entry = new STentry(nestingLevel, classType, decOffset--);
 
 		if (symTable.get(nestingLevel).put(n.id, entry) != null) {
@@ -248,21 +267,47 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		nestingLevel++;
 
-		//Creazione dello scope vuoto, riempito poi da visit(MethodNode)
-		symTable.add(new HashMap<>());
+		Map<String, STentry> virtualTable = new HashMap<>();
+		classTable.put(n.id, virtualTable); //Aggiunta definitiva in classTable
+		symTable.add(virtualTable); //Aggiunta temporanea in symTable
+
+		int fieldsOffset = FIELDS_STARTING_OFFSET;
+		for (FieldNode f : n.fields) {
+			if (virtualTable.containsKey(f.id)) {
+				System.out.println("Errore: Campo " + n.id + " già dichiarato.");
+				stErrors++;
+			}
+
+			STentry fieldEntry = new STentry(nestingLevel, f.getType(), fieldsOffset);
+
+			classType.allFields.add(-fieldEntry.offset - 1, f.getType());
+			virtualTable.put(f.id, fieldEntry);
+
+			fieldsOffset += FIELDS_OFFSET_DELTA;
+
+			visit(f);
+		}
 
 		int prevDeclOffset = decOffset;
-		decOffset = -1;
 
-		for (FieldNode f : n.fields) visit(f);
+		decOffset = METHODS_STARTING_OFFSET;
+		for (MethodNode m : n.methods) {
+			if (virtualTable.containsKey(m.id)) {
+				System.out.println("Errore: Identificatore " + n.id + " già utilizzato.");
+				stErrors++;
+			}
 
-		decOffset = 0;
+			visit(m);
 
-		for (MethodNode m : n.methods) visit(m);
+			final ArrowTypeNode methodType = (ArrowTypeNode) symTable.get(nestingLevel).get(m.id).type;
+			classType.allMethods.add(decOffset, methodType);
+
+			decOffset += METHODS_OFFSET_DELTA;
+		}
 
 		decOffset = prevDeclOffset;
 
-		nestingLevel--;
+		symTable.remove(nestingLevel--);
 
 		return null;
 	}
@@ -271,15 +316,6 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	@Override
 	public Void visitNode(FieldNode n) {
 		if (print) printNode(n);
-
-		if (symTable.get(nestingLevel).containsKey(n.id)) { //Controllo che il campo non esista già
-			System.out.println("Errore: Campo " + n.id + " già dichiarato.");
-			stErrors++;
-			return null;
-		}
-
-		symTable.get(nestingLevel).put(n.id, new STentry(nestingLevel, n.getType(), decOffset--));
-
 		return null;
 	}
 
@@ -287,39 +323,34 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	public Void visitNode(MethodNode n) {
 		if (print) printNode(n);
 
-		Map<String, STentry> classTable = symTable.get(nestingLevel);
-
-		if (classTable.containsKey(n.id)) {
-			System.out.println("Errore: Metodo " + n.id + " già dichiarato.");
-			stErrors++;
-			return null;
-		}
+		Map<String, STentry> virtualTable = symTable.get(nestingLevel);
 
 		List<TypeNode> paramTypes = n.parlist.stream().map(ParNode::getType).toList();
 
-		STentry entry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset++);
-		classTable.put(n.id, entry);
+		STentry methodEntry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset);
+		virtualTable.put(n.id, methodEntry);
 
 		nestingLevel++;
 		Map<String, STentry> methodTable = new HashMap<>();
 		symTable.add(methodTable);
 
-		int paramOffset = 1;
+		int paramOffset = PARAMETERS_STARTING_OFFSET;
 		for (ParNode par : n.parlist) {
-			if (methodTable.put(par.id, new STentry(nestingLevel, par.getType(), paramOffset++)) != null) {
+			if (methodTable.put(par.id, new STentry(nestingLevel, par.getType(), paramOffset)) != null) {
+				paramOffset += PARAMETERS_OFFSET_DELTA;
 				System.out.println("Errore: Parametro " + par.id + " già dichiarato.");
 				stErrors++;
 			}
 		}
 
 		int prevDecOffset = decOffset;
-		decOffset = -2; //Valore di partenza
+		decOffset = DECLARATIONS_STARTING_OFFSET; //Valore di partenza
 
 		for (Node dec : n.declist) visit(dec);
 
 		visit(n.exp);
 
-		symTable.remove(nestingLevel--); //TODO: Va probabilmente salvato da qualche parte
+		symTable.remove(nestingLevel--);
 		decOffset = prevDecOffset;
 
 		return null;
@@ -330,30 +361,18 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		if (print) printNode(n);
 		STentry entry = stLookup(n.objectId);
 		if (entry == null) {
-			System.out.println("Class id " + n.objectId + " at line "+ n.getLine() + " not declared");
+			System.out.println("Class object with id " + n.objectId + " at line "+ n.getLine() + " not declared");
 			stErrors++;
-		} else {
+		} else if (entry.type instanceof RefTypeNode) {
 
-			ClassTypeNode classType = (ClassTypeNode) entry.type;
-			ArrowTypeNode methodType = null;
-
-
-//			for(Map.Entry<String, ArrowTypeNode> method : classType.allMethods().entrySet()) {
-//				if (method.)
-//			}
-			for (Map.Entry<String, ArrowTypeNode> method : classType.allMethods().entrySet()) {
-				if (method.getKey().equals(n.methodId)) {
-					methodType = method.getValue();
-					break;
-				}
+			Map<String, STentry> virtualTable = classTable.get(((RefTypeNode) entry.type).id);
+			if (virtualTable.containsKey(n.methodId) && virtualTable.get(n.methodId).type instanceof ArrowTypeNode) {
+//				n.entry = entry;
+//				n.nl = nestingLevel;
 			}
-
-			if (methodType == null) {
+			else {
 				System.out.println("Method id " + n.methodId + " at line "+ n.getLine() + " not declared");
 				stErrors++;
-			} else {
-				n.entry = entry;
-				n.nl = nestingLevel;
 			}
 			for (Node arg : n.arglist) visit(arg);
 		}

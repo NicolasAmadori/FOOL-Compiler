@@ -319,9 +319,9 @@ public class AST {
 		final List<TypeNode> allFields;
 		final List<ArrowTypeNode> allMethods;
 
-		ClassTypeNode(List<TypeNode> af, List<ArrowTypeNode> am) {
-			allFields = Collections.unmodifiableList(af);
-			allMethods = Collections.unmodifiableList(am);
+		ClassTypeNode(ArrayList<TypeNode> af, ArrayList<ArrowTypeNode> am) {
+			allFields = af;
+			allMethods = am;
 		}
 
 		@Override
