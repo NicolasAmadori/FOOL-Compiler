@@ -329,6 +329,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		STentry methodEntry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset);
 		virtualTable.put(n.id, methodEntry);
+		n.offset = methodEntry.offset;
 
 		nestingLevel++;
 		Map<String, STentry> methodTable = new HashMap<>();
