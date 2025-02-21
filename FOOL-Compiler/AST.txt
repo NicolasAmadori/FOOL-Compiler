@@ -1,0 +1,183 @@
+ProgLetIn
+  Class: List
+    Field: f
+      IntType
+    Field: r
+      RefType: List
+    Method: first
+      IntType
+      Id: f at nestinglevel 2
+        STentry: nestlev 1
+        STentry: type
+          IntType
+        STentry: offset -1
+    Method: rest
+      RefType: List
+      Id: r at nestinglevel 2
+        STentry: nestlev 1
+        STentry: type
+          RefType: List
+        STentry: offset -2
+  Fun: printList
+    RefType: List
+    Par: l
+      RefType: List
+    Fun: makeList
+      RefType: List
+      Par: l
+        RefType: List
+      Par: i
+        IntType
+      New: List at nesting level 0
+        STentry: nestlev 0
+        STentry: type
+          ClassType
+            IntType
+            RefType: List
+            ArrowType
+              ->IntType
+            ArrowType
+              ->RefType: List
+        STentry: offset -2
+        Id: i at nestinglevel 2
+          STentry: nestlev 2
+          STentry: type
+            IntType
+          STentry: offset 2
+        Id: l at nestinglevel 2
+          STentry: nestlev 2
+          STentry: type
+            RefType: List
+          STentry: offset 1
+    If
+      Equal
+        Id: l at nestinglevel 1
+          STentry: nestlev 1
+          STentry: type
+            RefType: List
+          STentry: offset 1
+        Empty
+      Empty
+      Call: makeList at nestinglevel 1
+        STentry: nestlev 1
+        STentry: type
+          ArrowType
+            RefType: List
+            IntType
+            ->RefType: List
+        STentry: offset -2
+        Call: printList at nestinglevel 1
+          STentry: nestlev 0
+          STentry: type
+            ArrowType
+              RefType: List
+              ->RefType: List
+          STentry: offset -3
+          ClassCall: l.rest at nestinglevel 1
+            STentry: nestlev 1
+            STentry: type
+              RefType: List
+            STentry: offset 1
+            STentry: nestlev 1
+            STentry: type
+              ArrowType
+                ->RefType: List
+            STentry: offset 1
+        Print
+          ClassCall: l.first at nestinglevel 1
+            STentry: nestlev 1
+            STentry: type
+              RefType: List
+            STentry: offset 1
+            STentry: nestlev 1
+            STentry: type
+              ArrowType
+                ->IntType
+            STentry: offset 0
+  Var: l
+    RefType: List
+    New: List at nesting level 0
+      STentry: nestlev 0
+      STentry: type
+        ClassType
+          IntType
+          RefType: List
+          ArrowType
+            ->IntType
+          ArrowType
+            ->RefType: List
+      STentry: offset -2
+      Int: 2
+      New: List at nesting level 0
+        STentry: nestlev 0
+        STentry: type
+          ClassType
+            IntType
+            RefType: List
+            ArrowType
+              ->IntType
+            ArrowType
+              ->RefType: List
+        STentry: offset -2
+        Int: 1
+        New: List at nesting level 0
+          STentry: nestlev 0
+          STentry: type
+            ClassType
+              IntType
+              RefType: List
+              ArrowType
+                ->IntType
+              ArrowType
+                ->RefType: List
+          STentry: offset -2
+          Int: 4
+          New: List at nesting level 0
+            STentry: nestlev 0
+            STentry: type
+              ClassType
+                IntType
+                RefType: List
+                ArrowType
+                  ->IntType
+                ArrowType
+                  ->RefType: List
+            STentry: offset -2
+            Int: 3
+            New: List at nesting level 0
+              STentry: nestlev 0
+              STentry: type
+                ClassType
+                  IntType
+                  RefType: List
+                  ArrowType
+                    ->IntType
+                  ArrowType
+                    ->RefType: List
+              STentry: offset -2
+              Int: 2
+              New: List at nesting level 0
+                STentry: nestlev 0
+                STentry: type
+                  ClassType
+                    IntType
+                    RefType: List
+                    ArrowType
+                      ->IntType
+                    ArrowType
+                      ->RefType: List
+                STentry: offset -2
+                Int: 5
+                Empty
+  Call: printList at nestinglevel 0
+    STentry: nestlev 0
+    STentry: type
+      ArrowType
+        RefType: List
+        ->RefType: List
+    STentry: offset -3
+    Id: l at nestinglevel 0
+      STentry: nestlev 0
+      STentry: type
+        RefType: List
+      STentry: offset -4

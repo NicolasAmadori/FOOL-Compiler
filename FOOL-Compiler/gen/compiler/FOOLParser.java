@@ -1,4 +1,4 @@
-// Generated from C:/Users/Nicolas/IdeaProjects/FOOL-Compiler/src/compiler/FOOL.g4 by ANTLR 4.13.2
+// Generated from C:/Users/nicol/Desktop/FOOL-Compiler/FOOL-Compiler/src/compiler/FOOL.g4 by ANTLR 4.13.2
 package compiler;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -371,7 +371,7 @@ public class FOOLParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_cldec; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof FOOLListener ) ((FOOLListener)listener).enterCldec(this);
+				if ( listener instanceof FOOLListener ) ((FOOLListener)listener).enterCldec(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {

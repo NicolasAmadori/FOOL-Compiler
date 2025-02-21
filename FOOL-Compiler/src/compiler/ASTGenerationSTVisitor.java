@@ -45,9 +45,12 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 	@Override
 	public Node visitLetInProg(LetInProgContext c) {
 		if (print) printVarAndProdName(c);
-		List<DecNode> declist = new ArrayList<>();
-		for (DecContext dec : c.dec()) declist.add((DecNode) visit(dec));
-		return new ProgLetInNode(declist, visit(c.exp()));
+		List<DecNode> allDecList = new ArrayList<>();
+		for (CldecContext clDec : c.cldec()) allDecList.add((DecNode) visit(clDec));
+
+		for (DecContext dec : c.dec()) allDecList.add((DecNode) visit(dec));
+
+		return new ProgLetInNode(allDecList, visit(c.exp()));
 	}
 
 	@Override
@@ -143,7 +146,7 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 	public Node visitFundec(FundecContext c) {
 		if (print) printVarAndProdName(c);
 		List<ParNode> parList = new ArrayList<>();
-		for (int i = 1; i < c.ID().size(); i++) { 
+		for (int i = 1; i < c.ID().size(); i++) {
 			ParNode p = new ParNode(c.ID(i).getText(),(TypeNode) visit(c.type(i)));
 			p.setLine(c.ID(i).getSymbol().getLine());
 			parList.add(p);
@@ -151,7 +154,7 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 		List<DecNode> decList = new ArrayList<>();
 		for (DecContext dec : c.dec()) decList.add((DecNode) visit(dec));
 		Node n = null;
-		if (c.ID().size()>0) { //non-incomplete ST
+		if (!c.ID().isEmpty()) { //non-incomplete ST
 			n = new FunNode(c.ID(0).getText(),(TypeNode)visit(c.type(0)),parList,decList,visit(c.exp()));
 			n.setLine(c.FUN().getSymbol().getLine());
 		}
@@ -235,8 +238,9 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 	@Override
 	public Node visitIdType(IdTypeContext c) {
 		if (print) printVarAndProdName(c);
-		String id = c.ID().getText();
-		return new RefTypeNode(id);
+		RefTypeNode rtNode = new RefTypeNode(c.ID().getText());
+		rtNode.setLine(c.ID().getSymbol().getLine());
+		return rtNode;
 	}
 
 	@Override
@@ -262,7 +266,7 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 			));
 		}
 
-		//Lettura dei metodi (a partire dal loor context)
+		//Lettura dei metodi (a partire dal loro context)
 		List<MethodNode> methodList = new ArrayList<>();
 		for (MethdecContext mC : c.methdec()) methodList.add((MethodNode) visit(mC));
 		return new ClassNode(className, superClass, fieldList, methodList);

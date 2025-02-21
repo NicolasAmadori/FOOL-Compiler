@@ -32,7 +32,8 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 
 	SymbolTableASTVisitor() {}
-	SymbolTableASTVisitor(boolean debug) {super(debug);} // enables print for debugging
+	SymbolTableASTVisitor(boolean incomplExc) {super(incomplExc);} // enables print for debugging
+	SymbolTableASTVisitor(boolean incomplExc, boolean debug) {super(incomplExc, debug);}
 
 	private STentry stLookup(String id) {
 		int j = nestingLevel;
@@ -269,6 +270,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		Map<String, STentry> virtualTable = new HashMap<>();
 		classTable.put(n.id, virtualTable); //Aggiunta definitiva in classTable
+
 		symTable.add(virtualTable); //Aggiunta temporanea in symTable
 
 		int fieldsOffset = FIELDS_STARTING_OFFSET;
