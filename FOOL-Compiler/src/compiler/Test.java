@@ -7,11 +7,11 @@ import compiler.lib.*;
 import compiler.exc.*;
 
 //SVM Classica
-import svm.*;
+//import svm.*;
 
 //Virtual SVM
-//import visualsvm.*;
-//import java.nio.file.*;
+import visualsvm.*;
+import java.nio.file.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
@@ -83,10 +83,10 @@ public class Test {
     	System.out.println("Running generated code via Stack Virtual Machine.");
 
 		//SVM classica
-    	ExecuteVM vm = new ExecuteVM(parserASM.code);
+//    	ExecuteVM vm = new ExecuteVM(parserASM.code);
 
 		//Virtual SVM
-//		ExecuteVM vm = new ExecuteVM(parserASM.code,parserASM.sourceMap,Files.readAllLines(Paths.get(fileName+".asm")));
+		ExecuteVM vm = new ExecuteVM(parserASM.code,parserASM.sourceMap,Files.readAllLines(Paths.get(fileName+".asm")));
 
     	vm.cpu();
     }
