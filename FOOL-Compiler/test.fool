@@ -13,12 +13,6 @@ let
            then {null}
            else {makeList(printList(l.rest()),print(l.first()))};
 
-  var l:List = new List (2,
-                    new List(1,
-                        new List(4,
-                            new List (3,
-                                new List(2,
-                                    new List(5,null))))));
+  var l:List = new List (2, new List(1, null));
 
 in printList(l);
-

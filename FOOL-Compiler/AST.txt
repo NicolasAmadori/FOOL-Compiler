@@ -120,55 +120,7 @@ ProgLetIn
               ->RefType: List
         STentry: offset -2
         Int: 1
-        New: List at nesting level 0
-          STentry: nestlev 0
-          STentry: type
-            ClassType
-              IntType
-              RefType: List
-              ArrowType
-                ->IntType
-              ArrowType
-                ->RefType: List
-          STentry: offset -2
-          Int: 4
-          New: List at nesting level 0
-            STentry: nestlev 0
-            STentry: type
-              ClassType
-                IntType
-                RefType: List
-                ArrowType
-                  ->IntType
-                ArrowType
-                  ->RefType: List
-            STentry: offset -2
-            Int: 3
-            New: List at nesting level 0
-              STentry: nestlev 0
-              STentry: type
-                ClassType
-                  IntType
-                  RefType: List
-                  ArrowType
-                    ->IntType
-                  ArrowType
-                    ->RefType: List
-              STentry: offset -2
-              Int: 2
-              New: List at nesting level 0
-                STentry: nestlev 0
-                STentry: type
-                  ClassType
-                    IntType
-                    RefType: List
-                    ArrowType
-                      ->IntType
-                    ArrowType
-                      ->RefType: List
-                STentry: offset -2
-                Int: 5
-                Empty
+        Empty
   Call: printList at nestinglevel 0
     STentry: nestlev 0
     STentry: type

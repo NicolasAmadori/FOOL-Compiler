@@ -260,16 +260,20 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 		//Lettura dei fields con id e tipi
 		List<FieldNode> fieldList = new ArrayList<>();
 		for (int i = startingIndex; i < c.ID().size(); i++) {
-			fieldList.add(new FieldNode(
+			FieldNode f = new FieldNode(
 					c.ID(i).getText(),
 					(TypeNode) visit(c.type(i - startingIndex))
-			));
+			);
+			f.setLine(c.ID(i).getSymbol().getLine());
+			fieldList.add(f);
 		}
 
 		//Lettura dei metodi (a partire dal loro context)
 		List<MethodNode> methodList = new ArrayList<>();
 		for (MethdecContext mC : c.methdec()) methodList.add((MethodNode) visit(mC));
-		return new ClassNode(className, superClass, fieldList, methodList);
+		ClassNode classNode = new ClassNode(className, superClass, fieldList, methodList);
+		classNode.setLine(c.ID(0).getSymbol().getLine());
+		return classNode;
 	}
 
 	@Override
@@ -281,15 +285,18 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 
 		List<ParNode> paramList = new ArrayList<>();
 		for (int i = 1; i < c.ID().size(); i++) {
-			paramList.add(new ParNode(c.ID(i).getText(),(TypeNode) visit(c.type(i))));
+			ParNode p = new ParNode(c.ID(i).getText(),(TypeNode) visit(c.type(i)));
+			p.setLine(c.ID(i).getSymbol().getLine());
+			paramList.add(p);
 		}
 
 		List<DecNode> decList = new ArrayList<>();
 		for (DecContext dec : c.dec()) decList.add((DecNode) visit(dec));
 
 		Node body = visit(c.exp());
-
-		return new MethodNode(methodName, returnType, paramList, decList, body);
+		MethodNode m = new MethodNode(methodName, returnType, paramList, decList, body);
+		m.setLine(c.ID(0).getSymbol().getLine());
+		return m;
 	}
 
 	@Override
@@ -301,13 +308,17 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 		List<Node> expList = new ArrayList<>();
 		for (ExpContext exp : c.exp()) expList.add(visit(exp));
 
-		return new NewNode(className, expList);
+		NewNode n = new NewNode(className, expList);
+		n.setLine(c.ID().getSymbol().getLine());
+		return n;
 	}
 
 	@Override
 	public Node visitNull(NullContext c) {
 		if (print) printVarAndProdName(c);
-		return new EmptyNode(); //TODO: Check if EmptyNode or EmptyTypeNode
+		EmptyNode e = new EmptyNode();
+		e.setLine(c.NULL().getSymbol().getLine());
+		return e;
 	}
 
 	@Override
@@ -320,6 +331,8 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 		List<Node> expList = new ArrayList<>();
 		for (ExpContext exp : c.exp()) expList.add(visit(exp));
 
-		return new ClassCallNode(objectName, methodName, expList);
+		ClassCallNode classCallNode =  new ClassCallNode(objectName, methodName, expList);
+		classCallNode.setLine(c.ID(0).getSymbol().getLine());
+		return classCallNode;
 	}
 }
