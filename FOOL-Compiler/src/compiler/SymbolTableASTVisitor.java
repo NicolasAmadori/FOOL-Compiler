@@ -1,6 +1,8 @@
 package compiler;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import compiler.AST.*;
 import compiler.exc.*;
 import compiler.lib.*;
@@ -250,15 +252,30 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	public Void visitNode(ClassNode n) {
 		if (print) printNode(n);
 
-//		List<TypeNode> fieldTypes = n.fields.stream().map(FieldNode::getType).toList();
-//
-//		List<ArrowTypeNode> methodTypes = new ArrayList<>();
-//		for (MethodNode m : n.methods) {
-//			List<TypeNode> paramTypes = m.parlist.stream().map(ParNode::getType).toList();
-//			methodTypes.add(new ArrowTypeNode(paramTypes, m.retType));
-//		}
+		ClassTypeNode classType;
+		final Map<String, STentry> virtualTable = new HashMap<>();
+		int fieldsOffset = FIELDS_STARTING_OFFSET;
 
-		ClassTypeNode classType = new ClassTypeNode(new ArrayList<>(), new ArrayList<>());
+		Map<String, STentry> superClassvirtualTable = null;
+		if(n.superClassId != null){
+			ClassTypeNode superClassType = (ClassTypeNode) symTable.get(nestingLevel).get(n.superClassId).type;
+			ArrayList<TypeNode> allFieldsCopy = new ArrayList<>(superClassType.allFields);
+			ArrayList<ArrowTypeNode> allMethodsCopy = new ArrayList<>(superClassType.allMethods);
+
+			classType = new ClassTypeNode(allFieldsCopy, allMethodsCopy);
+
+			superClassvirtualTable = classTable.get(n.superClassId);
+			if(superClassvirtualTable == null){
+				System.out.println("Errore: Super class " + n.superClassId + " della classe " + n.id + "non esiste.");
+				stErrors++;
+			} else {
+                virtualTable.putAll(superClassvirtualTable);
+				fieldsOffset = superClassvirtualTable.values().stream().map(e -> e.offset + FIELDS_OFFSET_DELTA).min(Integer::compareTo).orElse(FIELDS_STARTING_OFFSET);
+			}
+		} else {
+			classType = new ClassTypeNode(new ArrayList<>(), new ArrayList<>());
+		}
+
 		STentry entry = new STentry(nestingLevel, classType, decOffset--);
 
 		if (symTable.get(nestingLevel).put(n.id, entry) != null) {
@@ -267,22 +284,31 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		}
 
 		nestingLevel++;
-
-		Map<String, STentry> virtualTable = new HashMap<>();
 		classTable.put(n.id, virtualTable); //Aggiunta definitiva in classTable
-
 		symTable.add(virtualTable); //Aggiunta temporanea in symTable
 
-		int fieldsOffset = FIELDS_STARTING_OFFSET;
+		List<String> classFieldsNames = new ArrayList<>();
 		for (FieldNode f : n.fields) {
-			if (virtualTable.containsKey(f.id)) {
+			if (classFieldsNames.contains(f.id)) {
 				System.out.println("Errore: Campo " + n.id + " già dichiarato.");
 				stErrors++;
 			}
+			classFieldsNames.add(f.id);
 
-			STentry fieldEntry = new STentry(nestingLevel, f.getType(), fieldsOffset);
+			STentry fieldEntry;
+			if(virtualTable.containsKey(f.id)){
+				STentry oldEntry = virtualTable.get(f.id);
+				if(oldEntry.type instanceof ArrowTypeNode){
+					System.out.println("Errore: Impossibile creare il campo " + n.id + " poichè esistente un metodo della classe " + n.superClassId + " con tale nome.");
+					stErrors++;
+				}
+				fieldEntry = new STentry(nestingLevel, f.getType(), oldEntry.offset);
+				classType.allFields.set(- fieldEntry.offset - 1, f.getType());
+			} else {
+				fieldEntry = new STentry(nestingLevel, f.getType(), fieldsOffset);
+				classType.allFields.add(- fieldEntry.offset - 1, f.getType());
+			}
 
-			classType.allFields.add(-fieldEntry.offset - 1, f.getType());
 			virtualTable.put(f.id, fieldEntry);
 
 			fieldsOffset += FIELDS_OFFSET_DELTA;

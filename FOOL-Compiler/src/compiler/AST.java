@@ -237,7 +237,7 @@ public class AST {
 	
 	public static class ClassNode extends DecNode {
 		final String id;
-		final String superClassId; //Non utilizzato nell'implementazione senza ereditarietà
+		final String superClassId;
 		final List<FieldNode> fields;
 		final List<MethodNode> methods;
 
@@ -322,8 +322,8 @@ public class AST {
 	}
 
 	public static class ClassTypeNode extends TypeNode {
-		final List<TypeNode> allFields;
-		final List<ArrowTypeNode> allMethods;
+		final ArrayList<TypeNode> allFields;
+		final ArrayList<ArrowTypeNode> allMethods;
 
 		ClassTypeNode(ArrayList<TypeNode> af, ArrayList<ArrowTypeNode> am) {
 			allFields = af;
