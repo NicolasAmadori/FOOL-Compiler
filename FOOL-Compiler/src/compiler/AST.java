@@ -240,6 +240,7 @@ public class AST {
 		final String superClassId;
 		final List<FieldNode> fields;
 		final List<MethodNode> methods;
+		STentry superEntry;
 
 		ClassNode(String i, String si, List<FieldNode> pl, List<MethodNode> fl) {
 			id = i;

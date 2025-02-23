@@ -258,7 +258,9 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		Map<String, STentry> superClassvirtualTable = null;
 		if(n.superClassId != null){
-			ClassTypeNode superClassType = (ClassTypeNode) symTable.get(nestingLevel).get(n.superClassId).type;
+			STentry superClassEntry = symTable.get(nestingLevel).get(n.superClassId);
+			n.superEntry = superClassEntry;
+			ClassTypeNode superClassType = (ClassTypeNode) superClassEntry.type;
 			ArrayList<TypeNode> allFieldsCopy = new ArrayList<>(superClassType.allFields);
 			ArrayList<ArrowTypeNode> allMethodsCopy = new ArrayList<>(superClassType.allMethods);
 
@@ -270,8 +272,8 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 				stErrors++;
 			} else {
                 virtualTable.putAll(superClassvirtualTable);
-				fieldsOffset = superClassvirtualTable.values().stream().map(e -> e.offset + FIELDS_OFFSET_DELTA).min(Integer::compareTo).orElse(FIELDS_STARTING_OFFSET);
 			}
+			fieldsOffset = -classType.allFields.size()-1;
 		} else {
 			classType = new ClassTypeNode(new ArrayList<>(), new ArrayList<>());
 		}
@@ -290,16 +292,17 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		List<String> classFieldsNames = new ArrayList<>();
 		for (FieldNode f : n.fields) {
 			if (classFieldsNames.contains(f.id)) {
-				System.out.println("Errore: Campo " + n.id + " già dichiarato.");
+				System.out.println("Errore: Campo " + f.id + " già dichiarato.");
 				stErrors++;
+			} else {
+				classFieldsNames.add(f.id);
 			}
-			classFieldsNames.add(f.id);
 
 			STentry fieldEntry;
 			if(virtualTable.containsKey(f.id)){
 				STentry oldEntry = virtualTable.get(f.id);
 				if(oldEntry.type instanceof ArrowTypeNode){
-					System.out.println("Errore: Impossibile creare il campo " + n.id + " poichè esistente un metodo della classe " + n.superClassId + " con tale nome.");
+					System.out.println("Errore: Impossibile creare il campo " + f.id + " poichè esistente un metodo della classe " + n.superClassId + " con tale nome.");
 					stErrors++;
 				}
 				fieldEntry = new STentry(nestingLevel, f.getType(), oldEntry.offset);
@@ -307,30 +310,41 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 			} else {
 				fieldEntry = new STentry(nestingLevel, f.getType(), fieldsOffset);
 				classType.allFields.add(- fieldEntry.offset - 1, f.getType());
+				fieldsOffset += FIELDS_OFFSET_DELTA;
 			}
 
 			virtualTable.put(f.id, fieldEntry);
-
-			fieldsOffset += FIELDS_OFFSET_DELTA;
 
 			visit(f);
 		}
 
 		int prevDeclOffset = decOffset;
+		decOffset = (superClassvirtualTable != null) ? classType.allMethods.size() : METHODS_STARTING_OFFSET;
 
-		decOffset = METHODS_STARTING_OFFSET;
+
+		List<String> classMethodsNames = new ArrayList<>();
 		for (MethodNode m : n.methods) {
-			if (virtualTable.containsKey(m.id)) {
-				System.out.println("Errore: Identificatore " + n.id + " già utilizzato.");
+			if (classMethodsNames.contains(m.id)) {
+				System.out.println("Errore: Metodo " + m.id + " già dichiarato all'interno della classe" + m.id + ".");
 				stErrors++;
+			} else {
+				classMethodsNames.add(m.id);
 			}
+
+			final STentry oldMethodEntry = virtualTable.get(m.id);
 
 			visit(m);
 
-			final ArrowTypeNode methodType = (ArrowTypeNode) symTable.get(nestingLevel).get(m.id).type;
-			classType.allMethods.add(decOffset, methodType);
-
-			decOffset += METHODS_OFFSET_DELTA;
+			if(virtualTable.containsKey(m.id)){
+				if(!(oldMethodEntry.type instanceof ArrowTypeNode)){
+					System.out.println("Errore: Impossibile creare il metodo " + m.id + " poichè esistente un campo della classe " + n.superClassId + " con tale nome.");
+					stErrors++;
+				}
+				classType.allMethods.set(oldMethodEntry.offset, (ArrowTypeNode) m.getType());
+			} else {
+				classType.allMethods.add(decOffset, (ArrowTypeNode) m.getType());
+				decOffset += METHODS_OFFSET_DELTA;
+			}
 		}
 
 		decOffset = prevDeclOffset;
@@ -355,7 +369,13 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		List<TypeNode> paramTypes = n.parlist.stream().map(ParNode::getType).toList();
 
-		STentry methodEntry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset);
+		STentry methodEntry;
+		if (virtualTable.containsKey(n.id)) {
+			STentry oldEntry = virtualTable.get(n.id);
+			methodEntry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), oldEntry.offset);
+		} else {
+			methodEntry = new STentry(nestingLevel, new ArrowTypeNode(paramTypes, n.retType), decOffset);
+		}
 		virtualTable.put(n.id, methodEntry);
 		n.offset = methodEntry.offset;
 
