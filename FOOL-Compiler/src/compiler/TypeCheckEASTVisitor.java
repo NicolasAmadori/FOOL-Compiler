@@ -221,6 +221,7 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 	@Override
 	public TypeNode visitNode(ClassNode n) throws TypeException {
 		if (print) printNode(n);
+		superType.put(n.id, n.superClassId);
 		n.methods.forEach(m ->  {
 			try {
 				visit(m);
@@ -228,6 +229,28 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 				System.out.println("Type checking error in a declaration: " + e.text);
 			}
 		});
+
+		ClassTypeNode classTypeNodeN = (ClassTypeNode) n.getType();
+		ClassTypeNode superClassTypeNode = (ClassTypeNode) n.superEntry.type;
+		if(classTypeNodeN.allFields.size() != superClassTypeNode.allFields.size()) {
+			throw new TypeException("SubClass " + n.id + " must have the same number of fields of the superclass " + n.superClassId, n.getLine());
+		} else {
+			for(int i = 0; i < classTypeNodeN.allFields.size(); i++) {
+				if(!isSubtype(classTypeNodeN.allFields.get(i), superClassTypeNode.allFields.get(i))) {
+					throw new TypeException("SubClass " + n.id + " fields must be subtypes of the fields of the superclass" + n.superClassId, n.getLine());
+				}
+			}
+		}
+
+		if(classTypeNodeN.allMethods.size() != superClassTypeNode.allMethods.size()) {
+			throw new TypeException("SubClass " + n.id + " must have the same number of methods of the superclass" + n.superClassId, n.getLine());
+		} else {
+			for(int i = 0; i < classTypeNodeN.allMethods.size(); i++) {
+				if(!isSubtype(classTypeNodeN.allMethods.get(i), superClassTypeNode.allMethods.get(i))) {
+					throw new TypeException("SubClass " + n.id + " methods must be subtypes of the methods of the superclass" + n.superClassId, n.getLine());
+				}
+			}
+		}
 		return null;
 	}
 
