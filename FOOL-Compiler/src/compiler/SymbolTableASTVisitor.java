@@ -335,14 +335,15 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 			visit(m);
 
-			if(virtualTable.containsKey(m.id)){
+			if(oldMethodEntry != null){
 				if(!(oldMethodEntry.type instanceof ArrowTypeNode)){
 					System.out.println("Errore: Impossibile creare il metodo " + m.id + " poichè esistente un campo della classe " + n.superClassId + " con tale nome.");
 					stErrors++;
 				}
-				classType.allMethods.set(oldMethodEntry.offset, (ArrowTypeNode) m.getType());
+				classType.allMethods.set(oldMethodEntry.offset, (ArrowTypeNode) oldMethodEntry.type);
 			} else {
-				classType.allMethods.add(decOffset, (ArrowTypeNode) m.getType());
+				final STentry newMethodEntry = virtualTable.get(m.id);
+				classType.allMethods.add(decOffset, (ArrowTypeNode) newMethodEntry.type);
 				decOffset += METHODS_OFFSET_DELTA;
 			}
 		}
@@ -351,6 +352,11 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 		symTable.remove(nestingLevel--);
 
+//		System.out.println("ClassNode arricchitto con symtable per la classe " + n.id + " fields: " + n.fields + " methods: " + n.methods);
+		System.out.println(nestingLevel);
+		STentry aaaa = symTable.get(nestingLevel).get(n.id);
+		ClassTypeNode bbbb = (ClassTypeNode) aaaa.type;
+		System.out.println("ClassNode arricchitto con symtable per la classe " + n.id + " fields: " + bbbb.allFields + " methods: " + bbbb.allMethods);
 		return null;
 	}
 

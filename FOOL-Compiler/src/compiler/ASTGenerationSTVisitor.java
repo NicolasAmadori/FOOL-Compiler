@@ -267,11 +267,23 @@ public class ASTGenerationSTVisitor extends FOOLBaseVisitor<Node> {
 			f.setLine(c.ID(i).getSymbol().getLine());
 			fieldList.add(f);
 		}
+		fieldList.get(0).getType();
 
 		//Lettura dei metodi (a partire dal loro context)
 		List<MethodNode> methodList = new ArrayList<>();
 		for (MethdecContext mC : c.methdec()) methodList.add((MethodNode) visit(mC));
-		ClassNode classNode = new ClassNode(className, superClass, fieldList, methodList);
+
+		List<TypeNode> fieldTypes = fieldList.stream().map(DecNode::getType).toList();
+		List<ArrowTypeNode> methodTypes = methodList.stream()
+				.map(m -> new ArrowTypeNode(m.parlist.stream()
+						.map(DecNode::getType)
+						.toList(),
+					m.retType))
+				.toList();
+
+		ClassTypeNode classType = new ClassTypeNode(new ArrayList<>(fieldTypes), new ArrayList<>(methodTypes));
+
+		ClassNode classNode = new ClassNode(className, superClass, fieldList, methodList, classType);
 		classNode.setLine(c.ID(0).getSymbol().getLine());
 		return classNode;
 	}

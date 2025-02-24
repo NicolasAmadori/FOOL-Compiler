@@ -17,6 +17,7 @@ public class Test {
     public static void main(String[] args) throws Exception {
 
     	String fileName = "quicksort.fool";
+		fileName = "bankloan.fool";
 //		fileName = "test.fool";
 
     	CharStream chars = CharStreams.fromFileName(fileName);

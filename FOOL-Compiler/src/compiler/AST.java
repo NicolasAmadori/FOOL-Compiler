@@ -242,12 +242,12 @@ public class AST {
 		final List<MethodNode> methods;
 		STentry superEntry;
 
-		ClassNode(String i, String si, List<FieldNode> pl, List<MethodNode> fl) {
+		ClassNode(String i, String si, List<FieldNode> pl, List<MethodNode> fl, TypeNode t) {
 			id = i;
 			superClassId = si;
 			fields = Collections.unmodifiableList(pl);
 			methods = Collections.unmodifiableList(fl);
-			type = new RefTypeNode(i);
+			type = t;
 		}
 
 		@Override

@@ -229,28 +229,40 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 				System.out.println("Type checking error in a declaration: " + e.text);
 			}
 		});
+		
+		if(n.superClassId != null) {
+			ClassTypeNode classTypeNodeN = (ClassTypeNode) n.getType();
+			ClassTypeNode superClassTypeNode = (ClassTypeNode) n.superEntry.type;
 
-		ClassTypeNode classTypeNodeN = (ClassTypeNode) n.getType();
-		ClassTypeNode superClassTypeNode = (ClassTypeNode) n.superEntry.type;
-		if(classTypeNodeN.allFields.size() != superClassTypeNode.allFields.size()) {
-			throw new TypeException("SubClass " + n.id + " must have the same number of fields of the superclass " + n.superClassId, n.getLine());
-		} else {
-			for(int i = 0; i < classTypeNodeN.allFields.size(); i++) {
+			System.out.println("fields classe padre " + n.superClassId);
+			for (TypeNode t : superClassTypeNode.allFields){
+				System.out.println(t.toString());
+			}
+			System.out.println("fields classe figlia " + n.id);
+			for (TypeNode t : classTypeNodeN.allFields){
+				System.out.println(t.toString());
+			}
+			for(int i = 0; i < superClassTypeNode.allFields.size(); i++) {
 				if(!isSubtype(classTypeNodeN.allFields.get(i), superClassTypeNode.allFields.get(i))) {
-					throw new TypeException("SubClass " + n.id + " fields must be subtypes of the fields of the superclass" + n.superClassId, n.getLine());
+					throw new TypeException("SubClass " + n.id + " fields must be subtypes of the fields of the superclass " + n.superClassId, n.getLine());
 				}
 			}
-		}
 
-		if(classTypeNodeN.allMethods.size() != superClassTypeNode.allMethods.size()) {
-			throw new TypeException("SubClass " + n.id + " must have the same number of methods of the superclass" + n.superClassId, n.getLine());
-		} else {
-			for(int i = 0; i < classTypeNodeN.allMethods.size(); i++) {
+			System.out.println("methods classe padre " + n.superClassId);
+			for (TypeNode t : superClassTypeNode.allMethods){
+				System.out.println(t.toString());
+			}
+			System.out.println("methods classe figlia " + n.id);
+			for (TypeNode t : classTypeNodeN.allMethods){
+				System.out.println(t.toString());
+			}
+			for(int i = 0; i < superClassTypeNode.allMethods.size(); i++) {
 				if(!isSubtype(classTypeNodeN.allMethods.get(i), superClassTypeNode.allMethods.get(i))) {
 					throw new TypeException("SubClass " + n.id + " methods must be subtypes of the methods of the superclass" + n.superClassId, n.getLine());
 				}
 			}
 		}
+
 		return null;
 	}
 
