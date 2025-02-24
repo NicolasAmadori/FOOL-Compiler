@@ -12,6 +12,8 @@ import static compiler.lib.FOOLlib.*;
 
 public class CodeGenerationASTVisitor extends BaseASTVisitor<String, VoidException> {
 
+	List<List<String>> dispatchTables;
+
   CodeGenerationASTVisitor() {}
   CodeGenerationASTVisitor(boolean debug) {super(false,debug);} //enables print for debugging
 
@@ -329,7 +331,7 @@ public class CodeGenerationASTVisitor extends BaseASTVisitor<String, VoidExcepti
 						"sfp", // set $fp to popped value (Control Link)
 						"ltm", // load $tm value (function result)
 						"lra", // load $ra value
-						"js"  // jump to to popped address
+						"js"  // jump to popped address
 				)
 		);
 		return null;
@@ -338,11 +340,17 @@ public class CodeGenerationASTVisitor extends BaseASTVisitor<String, VoidExcepti
 	@Override
 	public String visitNode(ClassNode n) {
 		if (print) printNode(n,n.id);
-		List<String> dispatchTable = new ArrayList<>();
+		final List<String> dispatchTable = (n.superClassId == null) ? new ArrayList<>() : new ArrayList<>(dispatchTables.get(-n.superEntry.offset - 2));
+
 		n.methods.forEach(m -> {
 				visit(m);
-				dispatchTable.add(m.offset, m.label);
+				if (m.offset < dispatchTable.size()) {
+					dispatchTable.set(m.offset, m.label);
+				} else {
+					dispatchTable.add(m.offset, m.label);
+				}
 		});
+		dispatchTables.add(dispatchTable);
 
 		String assemblyCode = "";
 		for (String methodLabel : dispatchTable){

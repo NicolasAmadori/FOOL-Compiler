@@ -17,7 +17,7 @@ public class Test {
     public static void main(String[] args) throws Exception {
 
     	String fileName = "quicksort.fool";
-		fileName = "test.fool";
+//		fileName = "test.fool";
 
     	CharStream chars = CharStreams.fromFileName(fileName);
     	FOOLLexer lexer = new FOOLLexer(chars);
