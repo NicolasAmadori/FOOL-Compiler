@@ -234,11 +234,10 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 			ClassTypeNode classTypeNodeN = (ClassTypeNode) n.getType();
 			ClassTypeNode superClassTypeNode = (ClassTypeNode) n.superEntry.type;
 
-			System.out.println("fields classe padre " + n.superClassId);
 			for (TypeNode t : superClassTypeNode.allFields){
 				System.out.println(t.toString());
 			}
-			System.out.println("fields classe figlia " + n.id);
+
 			for (TypeNode t : classTypeNodeN.allFields){
 				System.out.println(t.toString());
 			}
@@ -248,11 +247,11 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 				}
 			}
 
-			System.out.println("methods classe padre " + n.superClassId);
+
 			for (TypeNode t : superClassTypeNode.allMethods){
 				System.out.println(t.toString());
 			}
-			System.out.println("methods classe figlia " + n.id);
+
 			for (TypeNode t : classTypeNodeN.allMethods){
 				System.out.println(t.toString());
 			}

@@ -268,7 +268,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 			superClassvirtualTable = classTable.get(n.superClassId);
 			if(superClassvirtualTable == null){
-				System.out.println("Errore: Super class " + n.superClassId + " della classe " + n.id + "non esiste.");
+				System.out.println("Error: Super class " + n.superClassId + " of the class " + n.id + " do not exist.");
 				stErrors++;
 			} else {
                 virtualTable.putAll(superClassvirtualTable);
@@ -292,7 +292,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		List<String> classFieldsNames = new ArrayList<>();
 		for (FieldNode f : n.fields) {
 			if (classFieldsNames.contains(f.id)) {
-				System.out.println("Errore: Campo " + f.id + " già dichiarato.");
+				System.out.println("Error: Field " + f.id + " already declared.");
 				stErrors++;
 			} else {
 				classFieldsNames.add(f.id);
@@ -302,7 +302,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 			if(virtualTable.containsKey(f.id)){
 				STentry oldEntry = virtualTable.get(f.id);
 				if(oldEntry.type instanceof ArrowTypeNode){
-					System.out.println("Errore: Impossibile creare il campo " + f.id + " poichè esistente un metodo della classe " + n.superClassId + " con tale nome.");
+					System.out.println("Error: Impossible to create the field  " + f.id + " because it exists a method in the superclass " + n.superClassId + " with the same name.");
 					stErrors++;
 				}
 				fieldEntry = new STentry(nestingLevel, f.getType(), oldEntry.offset);
@@ -325,7 +325,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		List<String> classMethodsNames = new ArrayList<>();
 		for (MethodNode m : n.methods) {
 			if (classMethodsNames.contains(m.id)) {
-				System.out.println("Errore: Metodo " + m.id + " già dichiarato all'interno della classe" + m.id + ".");
+				System.out.println("Error: Method " + m.id + " already declared in the class scope " + m.id + ".");
 				stErrors++;
 			} else {
 				classMethodsNames.add(m.id);
@@ -337,7 +337,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 
 			if(oldMethodEntry != null){
 				if(!(oldMethodEntry.type instanceof ArrowTypeNode)){
-					System.out.println("Errore: Impossibile creare il metodo " + m.id + " poichè esistente un campo della classe " + n.superClassId + " con tale nome.");
+					System.out.println("Error: It is impossible to create the method " + m.id + " because it exists a field in the superclass " + n.superClassId + " with the same name.");
 					stErrors++;
 				}
 				classType.allMethods.set(oldMethodEntry.offset, (ArrowTypeNode) oldMethodEntry.type);
@@ -351,12 +351,11 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		decOffset = prevDeclOffset;
 
 		symTable.remove(nestingLevel--);
-
-//		System.out.println("ClassNode arricchitto con symtable per la classe " + n.id + " fields: " + n.fields + " methods: " + n.methods);
-		System.out.println(nestingLevel);
-		STentry aaaa = symTable.get(nestingLevel).get(n.id);
-		ClassTypeNode bbbb = (ClassTypeNode) aaaa.type;
-		System.out.println("ClassNode arricchitto con symtable per la classe " + n.id + " fields: " + bbbb.allFields + " methods: " + bbbb.allMethods);
+		ClassTypeNode nType = (ClassTypeNode) n.getType();
+		nType.allFields.clear();
+		nType.allFields.addAll(classType.allFields);
+		nType.allMethods.clear();
+		nType.allMethods.addAll(classType.allMethods);
 		return null;
 	}
 
@@ -393,7 +392,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		for (ParNode par : n.parlist) {
 			if (methodTable.put(par.id, new STentry(nestingLevel, par.getType(), paramOffset)) != null) {
 				paramOffset += PARAMETERS_OFFSET_DELTA;
-				System.out.println("Errore: Parametro " + par.id + " già dichiarato.");
+				System.out.println("Error: Parameter " + par.id + " already declared.");
 				stErrors++;
 			}
 		}
